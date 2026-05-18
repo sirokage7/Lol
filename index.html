@@ -484,6 +484,7 @@
       const [error,    setError]    = useState('');
       const [copied,   setCopied]   = useState(false);
       const [apiKey,   setApiKey]   = useState(() => localStorage.getItem('riotApiKey') || '');
+      const [workerUrl,setWorkerUrl]= useState(() => localStorage.getItem('workerUrl') || '');
       const [showKey,  setShowKey]  = useState(false);
       const [fetching, setFetching] = useState(false);
       const [fetchErr, setFetchErr] = useState('');
@@ -530,7 +531,8 @@
 
       const cancelEdit = () => { setEditId(null); setForm(EMPTY_FORM); setError(''); };
 
-      const saveApiKey = val => { setApiKey(val); localStorage.setItem('riotApiKey', val); };
+      const saveApiKey    = val => { setApiKey(val);    localStorage.setItem('riotApiKey', val); };
+      const saveWorkerUrl = val => { setWorkerUrl(val); localStorage.setItem('workerUrl', val); };
 
       const handleLookup = async () => {
         const name = form.name.trim();
@@ -543,7 +545,9 @@
 
           // Try multiple CORS proxies in order
           const riotGet = async (url) => {
+            const base = workerUrl.trim().replace(/\/$/, '');
             const proxies = [
+              ...(base ? [u => `${base}?url=` + encodeURIComponent(u)] : []),
               u => 'https://corsproxy.io/?url=' + encodeURIComponent(u),
               u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
               u => 'https://corsproxy.org/?' + encodeURIComponent(u),
@@ -690,20 +694,39 @@
                   </button>
                 </div>
                 {showKey && (
-                  <div style={{marginTop:10, display:'flex', flexDirection:'column', gap:6}}>
-                    <div style={{fontSize:'0.75rem', color:'var(--text-dim)', lineHeight:1.6}}>
-                      <b style={{color:'var(--gold)'}}>API 키 발급 방법:</b><br/>
-                      1. <b>developer.riotgames.com</b> 접속 → 로그인<br/>
-                      2. <b>DEVELOPMENT API KEY</b> 아래 키 복사 (RGAPI-...)<br/>
-                      3. 개발 키는 24시간마다 갱신 필요
+                  <div style={{marginTop:10, display:'flex', flexDirection:'column', gap:10}}>
+                    {/* Cloudflare Worker URL */}
+                    <div>
+                      <div style={{fontSize:'0.75rem', color: workerUrl ? '#22c55e' : 'var(--gold)', fontWeight:700, marginBottom:4}}>
+                        {workerUrl ? '✓ Cloudflare Worker 등록됨 (안정적 조회 가능)' : '🔧 Cloudflare Worker URL (권장)'}
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="https://xxx.workers.dev"
+                        value={workerUrl}
+                        onChange={e => saveWorkerUrl(e.target.value)}
+                        style={{fontFamily:'monospace', fontSize:'0.78rem'}}
+                      />
+                      {!workerUrl && (
+                        <div style={{fontSize:'0.72rem', color:'var(--text-dim)', marginTop:4, lineHeight:1.6}}>
+                          cloudflare.com 가입 → Workers &amp; Pages → Create Worker<br/>
+                          코드 붙여넣고 Deploy → 생성된 URL 입력
+                        </div>
+                      )}
                     </div>
-                    <input
-                      type="password"
-                      placeholder="RGAPI-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                      value={apiKey}
-                      onChange={e => saveApiKey(e.target.value)}
-                      style={{fontFamily:'monospace', fontSize:'0.78rem'}}
-                    />
+                    {/* Riot API Key */}
+                    <div>
+                      <div style={{fontSize:'0.75rem', color:'var(--text-dim)', fontWeight:700, marginBottom:4}}>
+                        Riot API 키 (developer.riotgames.com → DEVELOPMENT API KEY)
+                      </div>
+                      <input
+                        type="password"
+                        placeholder="RGAPI-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                        value={apiKey}
+                        onChange={e => saveApiKey(e.target.value)}
+                        style={{fontFamily:'monospace', fontSize:'0.78rem'}}
+                      />
+                    </div>
                   </div>
                 )}
               </div>
