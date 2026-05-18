@@ -36,7 +36,6 @@
       line-height: 1.5;
     }
 
-    /* HEADER */
     .header {
       background: linear-gradient(135deg, #0f1a30, #1a2a44);
       border-bottom: 2px solid var(--gold);
@@ -67,7 +66,6 @@
       position: relative;
     }
 
-    /* LAYOUT */
     .container { max-width: 960px; margin: 0 auto; padding: 24px 16px 60px; }
 
     .section {
@@ -90,7 +88,6 @@
       gap: 8px;
     }
 
-    /* FORM */
     .form-row {
       display: grid;
       gap: 12px;
@@ -108,7 +105,7 @@
       margin-bottom: 5px;
     }
 
-    input[type="text"], select {
+    input[입력="text"], select {
       width: 100%;
       background: var(--bg);
       border: 1px solid var(--border);
@@ -120,14 +117,13 @@
       transition: border-color 0.2s, box-shadow 0.2s;
       font-family: inherit;
     }
-    input[type="text"]:focus, select:focus {
+    input[입력="text"]:focus, select:focus {
       border-color: var(--gold);
       box-shadow: 0 0 0 2px rgba(200,155,60,0.15);
     }
     select option { background: #1a2030; }
     select:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    /* Position selector */
     .pos-group { display: flex; gap: 6px; }
     .pos-btn {
       flex: 1;
@@ -146,9 +142,8 @@
     .pos-btn:hover { border-color: var(--border2); color: var(--text); }
     .pos-btn.active { font-weight: 700; }
 
-    /* Win rate slider */
     .range-row { display: flex; align-items: center; gap: 10px; }
-    input[type="range"] {
+    input[입력="range"] {
       flex: 1;
       -webkit-appearance: none;
       height: 4px;
@@ -156,7 +151,7 @@
       border-radius: 2px;
       outline: none;
     }
-    input[type="range"]::-webkit-slider-thumb {
+    input[입력="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
       width: 18px; height: 18px;
       background: var(--gold);
@@ -167,7 +162,6 @@
     }
     .range-val { min-width: 40px; font-size: 0.9rem; font-weight: 700; color: var(--gold); text-align: right; }
 
-    /* Adjustment score */
     .adj-row { display: flex; align-items: center; gap: 8px; }
     .adj-btn {
       background: var(--bg);
@@ -185,7 +179,6 @@
     .adj-btn:hover { border-color: var(--gold); color: var(--gold); }
     .adj-val { min-width: 44px; text-align: center; font-size: 0.9rem; font-weight: 700; }
 
-    /* Score preview */
     .score-preview {
       display: flex;
       align-items: center;
@@ -201,7 +194,6 @@
     .score-big { font-size: 1.3rem; font-weight: 800; color: var(--gold); }
     .score-break { font-size: 0.75rem; color: var(--text-dim); flex: 1; }
 
-    /* Buttons */
     .btn {
       display: inline-flex; align-items: center; gap: 6px;
       padding: 9px 18px;
@@ -209,7 +201,7 @@
       font-size: 0.88rem; font-weight: 600;
       transition: all 0.15s;
       font-family: inherit;
-      white-space: nowrap;
+      white-space: 지금rap;
     }
     .btn:disabled { opacity: 0.4; cursor: not-allowed; }
     .btn-gold {
@@ -229,7 +221,6 @@
     .btn-del { background: transparent; color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
     .btn-del:hover { background: rgba(239,68,68,0.08); }
 
-    /* Player list */
     .player-item {
       display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
       padding: 11px 14px;
@@ -244,7 +235,7 @@
     .tier-badge {
       font-size: 0.72rem; font-weight: 700;
       padding: 2px 8px; border-radius: 4px; border: 1px solid;
-      white-space: nowrap;
+      white-space: 지금rap;
     }
     .pos-chips { display: flex; gap: 3px; }
     .pos-chip { font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
@@ -256,7 +247,6 @@
     .player-wr { font-size: 0.75rem; color: var(--text-dim); }
     .player-actions { display: flex; gap: 4px; }
 
-    /* Generate bar */
     .gen-bar {
       display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
       padding-top: 14px;
@@ -265,7 +255,6 @@
     }
     .gen-info { font-size: 0.85rem; color: var(--text-dim); }
 
-    /* Balance meter */
     .balance-wrap { margin-bottom: 18px; }
     .balance-bar-outer {
       display: flex; height: 8px; border-radius: 4px; overflow: hidden; margin: 8px 0 6px;
@@ -273,9 +262,7 @@
     .bar-blue { background: linear-gradient(90deg, #1e90ff, #60b4ff); transition: width 0.4s ease; }
     .bar-red  { background: linear-gradient(90deg, #ff6060, #ff3030); transition: width 0.4s ease; }
     .balance-labels { display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 700; }
-    .balance-center { text-align: center; margin-top: 6px; font-size: 0.82rem; }
 
-    /* Teams grid */
     .teams-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     .team-wrap { border-radius: 10px; overflow: hidden; border: 1px solid; }
     .team-wrap.blue { border-color: var(--blue-border); }
@@ -300,25 +287,22 @@
       font-size: 0.74rem; font-weight: 700;
     }
     .pos-badge.off { opacity: 0.65; }
-    .t-name { flex: 1; font-size: 0.88rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .t-tier { font-size: 0.72rem; font-weight: 600; white-space: nowrap; }
+    .t-name { flex: 1; font-size: 0.88rem; font-weight: 500; white-space: 지금rap; overflow: hidden; text-overflow: ellipsis; }
+    .t-tier { font-size: 0.72rem; font-weight: 600; white-space: 지금rap; }
     .t-score { font-size: 0.78rem; color: var(--gold); font-weight: 700; }
 
-    /* Split nav */
     .split-nav {
       display: flex; align-items: center; justify-content: center;
       gap: 12px; margin-top: 16px;
     }
     .split-nav-info { font-size: 0.82rem; color: var(--text-dim); }
 
-    /* Error */
     .error-msg {
       background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
       color: #f87171; padding: 8px 14px; border-radius: 7px;
       font-size: 0.85rem; margin-top: 10px;
     }
 
-    /* Toast */
     .toast {
       position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
       background: var(--success); color: #fff;
@@ -334,7 +318,6 @@
       100% { opacity: 0; }
     }
 
-    .divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
     .footnote { text-align: center; margin-top: 12px; font-size: 0.72rem; color: var(--text-dim); }
 
     @media (max-width: 620px) {
@@ -348,16 +331,16 @@
 </head>
 <body>
   <div id="root"></div>
-  <script type="text/babel">
+  <script 입력="text/babel">
     const { useState, useMemo } = React;
 
-    /* ====== CONSTANTS ====== */
-    const TIERS = ['아이언','브론즈','실버','골드','플레티넘','에메랄드','다이아몬드','마스터','그랜드마스터','챌린저'];
+    const TIERS = ['언랭','아이언','브론즈','실버','골드','플레티넘','에메랄드','다이아몬드','마스터','그랜드마스터','챌린저'];
     const HAS_DIV = new Set(['아이언','브론즈','실버','골드','플레티넘','에메랄드','다이아몬드']);
     const DIVISIONS = ['IV','III','II','I'];
     const POSITIONS = ['탑','정글','미드','원딜','서포터'];
 
     const TIER_BASE = {
+      '언랭':0,
       '아이언':1,'브론즈':5,'실버':9,'골드':13,
       '플레티넘':17,'에메랄드':21,'다이아몬드':25,
       '마스터':32,'그랜드마스터':36,'챌린저':40
@@ -365,6 +348,7 @@
     const DIV_BONUS = {'IV':0,'III':1,'II':2,'I':3};
 
     const TIER_COLORS = {
+      '언랭':'#6b7a8d',
       '아이언':'#8a8a8a','브론즈':'#c07848','실버':'#b0b8c4','골드':'#e8c240',
       '플레티넘':'#48c8b0','에메랄드':'#30c860','다이아몬드':'#60c8f8',
       '마스터':'#c870f0','그랜드마스터':'#f85050','챌린저':'#ff9820'
@@ -372,7 +356,6 @@
     const POS_COLORS = {'탑':'#e8803a','정글':'#48b050','미드':'#b060e8','원딜':'#4890e8','서포터':'#e8c040'};
     const POS_ICONS  = {'탑':'⚔','정글':'🌿','미드':'✦','원딜':'🏹','서포터':'🛡'};
 
-    /* ====== SCORING ====== */
     function calcScore(tier, division, winRate, manual) {
       const base = TIER_BASE[tier] ?? 13;
       const div  = HAS_DIV.has(tier) ? (DIV_BONUS[division] ?? 0) : 0;
@@ -380,7 +363,6 @@
       return +((base + div + wr + (manual || 0)).toFixed(1));
     }
 
-    /* ====== TEAM BALANCING ALGORITHM ====== */
     function getCombinations(arr, k) {
       if (k === 0) return [[]];
       if (arr.length === k) return [[...arr]];
@@ -441,7 +423,6 @@
         return { t1, t2, s1, s2, diff };
       });
 
-      // Keep all splits within 2 points of optimal for cycling
       return all
         .filter(s => s.diff <= minDiff + 2)
         .map(({ t1, t2, s1, s2, diff }) => ({
@@ -453,7 +434,6 @@
         }));
     }
 
-    /* ====== HELPERS ====== */
     let _uid = 0;
     const uid = () => `p${++_uid}`;
 
@@ -466,7 +446,6 @@
 
     const EMPTY_FORM = { name:'', tier:'골드', division:'IV', positions:[], winRate:50, manual:0 };
 
-    /* ====== APP ====== */
     function App() {
       const [players,  setPlayers]  = useState([]);
       const [form,     setForm]     = useState(EMPTY_FORM);
@@ -489,7 +468,6 @@
           : [...form.positions, pos]
       );
 
-      /* Add / Edit submit */
       const handleSubmit = () => {
         if (!form.name.trim()) { setError('닉네임을 입력해주세요'); return; }
         if (!editId && players.length >= 10) { setError('최대 10명까지 추가할 수 있습니다'); return; }
@@ -531,7 +509,6 @@
         if (editId === id) cancelEdit();
       };
 
-      /* Generate */
       const handleGenerate = () => {
         if (players.length < 4) { setError('최소 4명이 필요합니다'); return; }
         const res = balanceTeams(players);
@@ -541,7 +518,6 @@
         setTimeout(() => document.getElementById('result')?.scrollIntoView({ behavior:'smooth' }), 80);
       };
 
-      /* Copy result */
       const handleCopy = () => {
         if (!result) return;
         const lines = [
@@ -560,7 +536,6 @@
         });
       };
 
-      /* Score breakdown string */
       const breakdown = () => {
         const base = TIER_BASE[form.tier] + (HAS_DIV.has(form.tier) ? DIV_BONUS[form.division] : 0);
         const wr = ((form.winRate - 50) * 0.2).toFixed(1);
@@ -575,15 +550,12 @@
 
       return (
         <div>
-          {/* ─── HEADER ─── */}
           <header className="header">
             <h1>⚔ 롤 내전 팀 밸런서</h1>
             <p>티어 · 포지션 · 승률 · 조정 점수를 고려한 공정한 팀 배정</p>
           </header>
 
           <div className="container">
-
-            {/* ─── FORM ─── */}
             <div className="section">
               <div className="section-title">
                 {editId ? '✎ 플레이어 수정' : '+ 플레이어 추가'}
@@ -593,7 +565,7 @@
                 <div className="field">
                   <label>닉네임</label>
                   <input
-                    type="text" placeholder="소환사명 입력..."
+                    입력="text" placeholder="소환사명 입력..."
                     value={form.name}
                     onChange={e => sf('name', e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleSubmit()}
@@ -660,7 +632,7 @@
                   <label>최근 승률 (30 ~ 70%)</label>
                   <div className="range-row">
                     <input
-                      type="range" min="30" max="70" step="1"
+                      입력="range" min="30" max="70" step="1"
                       value={form.winRate}
                       onChange={e => sf('winRate', +e.target.value)}
                     />
@@ -688,7 +660,6 @@
               {error && <div className="error-msg">⚠ {error}</div>}
             </div>
 
-            {/* ─── PLAYER LIST ─── */}
             {players.length > 0 && (
               <div className="section">
                 <div className="section-title">
@@ -752,7 +723,6 @@
               </div>
             )}
 
-            {/* ─── RESULT ─── */}
             {result && (
               <div id="result" className="section">
                 <div className="section-title">
@@ -763,7 +733,6 @@
                   </div>
                 </div>
 
-                {/* Balance meter */}
                 {(() => {
                   const total = result.score1 + result.score2;
                   const blueW = total > 0 ? result.score1 / total * 100 : 50;
@@ -783,7 +752,6 @@
                   );
                 })()}
 
-                {/* Teams */}
                 <div className="teams-grid">
                   {[
                     { key:'t1', label:'🔵 블루팀', score: result.score1, members: result.team1, cls:'blue' },
@@ -819,7 +787,6 @@
                   ))}
                 </div>
 
-                {/* Split navigator */}
                 {splits.length > 1 && (
                   <div className="split-nav">
                     <button
@@ -852,4 +819,4 @@
     ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   </script>
 </body>
-</html>
+      </html>
