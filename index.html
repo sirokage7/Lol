@@ -546,11 +546,12 @@
             const proxies = [
               u => 'https://corsproxy.io/?url=' + encodeURIComponent(u),
               u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
+              u => 'https://corsproxy.org/?' + encodeURIComponent(u),
             ];
             let lastErr = new Error('네트워크 오류');
-            for (const makeUrl of proxies) {
+            for (let i = 0; i < proxies.length; i++) {
               try {
-                const r = await fetch(makeUrl(url));
+                const r = await fetch(proxies[i](url));
                 if (r.status === 404) throw new Error('404');
                 if (r.status === 403 || r.status === 401) throw new Error('403');
                 if (r.status === 429) throw new Error('429');
@@ -558,8 +559,10 @@
                 return await r.json();
               } catch (e) {
                 lastErr = e;
-                // Don't retry on API errors — only on network/proxy errors
-                if (['404','403','429'].some(c => String(e.message).includes(c))) throw e;
+                // 404/429 are definitive Riot errors — stop immediately
+                // 403 might be the proxy itself blocking us — try next proxy
+                const m = String(e.message);
+                if (m === '404' || m === '429') throw e;
               }
             }
             throw lastErr;
