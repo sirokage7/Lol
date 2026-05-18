@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>롤 내전 팀 밸런서</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #080c18;
+      --surface: #10182a;
+      --surface2: #17213a;
+      --border: #1e2e4a;
+      --border2: #2e4a7a;
+      --gold: #c89b3c;
+      --text: #e8dcc8;
+      --text-dim: #7a8aaa;
+      --blue: #3b82f6;
+      --red: #ef4444;
+      --blue-bg: #0f2040;
+      --red-bg: #2a0f0f;
+      --blue-border: #1e4080;
+      --red-border: #5a1a1a;
+      --success: #22c55e;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    /* HEADER */
+    .header {
+      background: linear-gradient(135deg, #0f1a30, #1a2a44);
+      border-bottom: 2px solid var(--gold);
+      padding: 24px 20px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center top, rgba(200,155,60,0.12) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .header h1 {
+      font-size: 1.9rem;
+      font-weight: 800;
+      color: var(--gold);
+      letter-spacing: 3px;
+      text-shadow: 0 0 30px rgba(200,155,60,0.45);
+      position: relative;
+    }
+    .header p {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      margin-top: 6px;
+      position: relative;
+    }
+
+    /* LAYOUT */
+    .container { max-width: 960px; margin: 0 auto; padding: 24px 16px 60px; }
+
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .section-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    /* FORM */
+    .form-row {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .form-1col { grid-template-columns: 1fr; }
+    .form-3col { grid-template-columns: 2fr 1fr 1fr; }
+
+    .field label {
+      display: block;
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 5px;
+    }
+
+    input[type="text"], select {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 9px 12px;
+      color: var(--text);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      font-family: inherit;
+    }
+    input[type="text"]:focus, select:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 2px rgba(200,155,60,0.15);
+    }
+    select option { background: #1a2030; }
+    select:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Position selector */
+    .pos-group { display: flex; gap: 6px; }
+    .pos-btn {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 7px 4px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      text-align: center;
+      transition: all 0.15s;
+      user-select: none;
+      font-family: inherit;
+    }
+    .pos-btn:hover { border-color: var(--border2); color: var(--text); }
+    .pos-btn.active { font-weight: 700; }
+
+    /* Win rate slider */
+    .range-row { display: flex; align-items: center; gap: 10px; }
+    input[type="range"] {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px; height: 18px;
+      background: var(--gold);
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid var(--bg);
+      box-shadow: 0 0 6px rgba(200,155,60,0.4);
+    }
+    .range-val { min-width: 40px; font-size: 0.9rem; font-weight: 700; color: var(--gold); text-align: right; }
+
+    /* Adjustment score */
+    .adj-row { display: flex; align-items: center; gap: 8px; }
+    .adj-btn {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      width: 32px; height: 32px;
+      cursor: pointer;
+      color: var(--text);
+      font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+      flex-shrink: 0;
+      font-family: inherit;
+    }
+    .adj-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .adj-val { min-width: 44px; text-align: center; font-size: 0.9rem; font-weight: 700; }
+
+    /* Score preview */
+    .score-preview {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-top: 4px;
+      flex-wrap: wrap;
+    }
+    .score-big { font-size: 1.3rem; font-weight: 800; color: var(--gold); }
+    .score-break { font-size: 0.75rem; color: var(--text-dim); flex: 1; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 18px;
+      border-radius: 8px; border: none; cursor: pointer;
+      font-size: 0.88rem; font-weight: 600;
+      transition: all 0.15s;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-gold {
+      background: linear-gradient(135deg, #c89b3c, #a07428);
+      color: #080c18;
+    }
+    .btn-gold:hover:not(:disabled) { filter: brightness(1.12); transform: translateY(-1px); }
+    .btn-gold:active:not(:disabled) { transform: translateY(0); }
+    .btn-outline {
+      background: transparent; color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-outline:hover { border-color: var(--border2); background: var(--surface2); }
+    .btn-sm { padding: 5px 10px; font-size: 0.78rem; }
+    .btn-edit { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
+    .btn-edit:hover { border-color: var(--gold); color: var(--gold); }
+    .btn-del { background: transparent; color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+    .btn-del:hover { background: rgba(239,68,68,0.08); }
+
+    /* Player list */
+    .player-item {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      padding: 11px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      transition: border-color 0.15s;
+    }
+    .player-item:hover { border-color: var(--border2); }
+    .player-name { font-weight: 600; font-size: 0.95rem; flex: 1; min-width: 80px; }
+    .tier-badge {
+      font-size: 0.72rem; font-weight: 700;
+      padding: 2px 8px; border-radius: 4px; border: 1px solid;
+      white-space: nowrap;
+    }
+    .pos-chips { display: flex; gap: 3px; }
+    .pos-chip { font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+    .flex-tag {
+      font-size: 0.72rem; padding: 2px 8px; border-radius: 4px;
+      background: var(--surface2); color: var(--text-dim);
+    }
+    .player-score { font-size: 0.85rem; font-weight: 800; color: var(--gold); min-width: 36px; text-align: right; }
+    .player-wr { font-size: 0.75rem; color: var(--text-dim); }
+    .player-actions { display: flex; gap: 4px; }
+
+    /* Generate bar */
+    .gen-bar {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      margin-top: 8px;
+    }
+    .gen-info { font-size: 0.85rem; color: var(--text-dim); }
+
+    /* Balance meter */
+    .balance-wrap { margin-bottom: 18px; }
+    .balance-bar-outer {
+      display: flex; height: 8px; border-radius: 4px; overflow: hidden; margin: 8px 0 6px;
+    }
+    .bar-blue { background: linear-gradient(90deg, #1e90ff, #60b4ff); transition: width 0.4s ease; }
+    .bar-red  { background: linear-gradient(90deg, #ff6060, #ff3030); transition: width 0.4s ease; }
+    .balance-labels { display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 700; }
+    .balance-center { text-align: center; margin-top: 6px; font-size: 0.82rem; }
+
+    /* Teams grid */
+    .teams-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .team-wrap { border-radius: 10px; overflow: hidden; border: 1px solid; }
+    .team-wrap.blue { border-color: var(--blue-border); }
+    .team-wrap.red  { border-color: var(--red-border); }
+    .team-head {
+      padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;
+      font-weight: 700; font-size: 0.95rem;
+    }
+    .team-head.blue { background: var(--blue-bg); color: #60b4ff; }
+    .team-head.red  { background: var(--red-bg);  color: #ff8080; }
+    .team-head-score { font-size: 0.78rem; opacity: 0.8; }
+    .team-body { background: var(--bg); padding: 10px; }
+
+    .team-player {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 8px; border-radius: 6px; margin-bottom: 4px;
+    }
+    .team-player:hover { background: rgba(255,255,255,0.025); }
+    .pos-badge {
+      display: inline-flex; align-items: center; justify-content: center; gap: 3px;
+      min-width: 78px; padding: 3px 7px; border-radius: 5px;
+      font-size: 0.74rem; font-weight: 700;
+    }
+    .pos-badge.off { opacity: 0.65; }
+    .t-name { flex: 1; font-size: 0.88rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .t-tier { font-size: 0.72rem; font-weight: 600; white-space: nowrap; }
+    .t-score { font-size: 0.78rem; color: var(--gold); font-weight: 700; }
+
+    /* Split nav */
+    .split-nav {
+      display: flex; align-items: center; justify-content: center;
+      gap: 12px; margin-top: 16px;
+    }
+    .split-nav-info { font-size: 0.82rem; color: var(--text-dim); }
+
+    /* Error */
+    .error-msg {
+      background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
+      color: #f87171; padding: 8px 14px; border-radius: 7px;
+      font-size: 0.85rem; margin-top: 10px;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: var(--success); color: #fff;
+      padding: 10px 22px; border-radius: 8px;
+      font-weight: 600; font-size: 0.88rem;
+      animation: toastAnim 2s ease forwards;
+      z-index: 1000; pointer-events: none;
+    }
+    @keyframes toastAnim {
+      0%   { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      15%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    .divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+    .footnote { text-align: center; margin-top: 12px; font-size: 0.72rem; color: var(--text-dim); }
+
+    @media (max-width: 620px) {
+      .form-3col { grid-template-columns: 1fr 1fr; }
+      .teams-grid { grid-template-columns: 1fr; }
+      .header h1 { font-size: 1.4rem; letter-spacing: 1.5px; }
+      .pos-group { flex-wrap: wrap; }
+      .pos-btn { min-width: 56px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useMemo } = React;
+
+    /* ====== CONSTANTS ====== */
+    const TIERS = ['아이언','브론즈','실버','골드','플레티넘','에메랄드','다이아몬드','마스터','그랜드마스터','챌린저'];
+    const HAS_DIV = new Set(['아이언','브론즈','실버','골드','플레티넘','에메랄드','다이아몬드']);
+    const DIVISIONS = ['IV','III','II','I'];
+    const POSITIONS = ['탑','정글','미드','원딜','서포터'];
+
+    const TIER_BASE = {
+      '아이언':1,'브론즈':5,'실버':9,'골드':13,
+      '플레티넘':17,'에메랄드':21,'다이아몬드':25,
+      '마스터':32,'그랜드마스터':36,'챌린저':40
+    };
+    const DIV_BONUS = {'IV':0,'III':1,'II':2,'I':3};
+
+    const TIER_COLORS = {
+      '아이언':'#8a8a8a','브론즈':'#c07848','실버':'#b0b8c4','골드':'#e8c240',
+      '플레티넘':'#48c8b0','에메랄드':'#30c860','다이아몬드':'#60c8f8',
+      '마스터':'#c870f0','그랜드마스터':'#f85050','챌린저':'#ff9820'
+    };
+    const POS_COLORS = {'탑':'#e8803a','정글':'#48b050','미드':'#b060e8','원딜':'#4890e8','서포터':'#e8c040'};
+    const POS_ICONS  = {'탑':'⚔','정글':'🌿','미드':'✦','원딜':'🏹','서포터':'🛡'};
+
+    /* ====== SCORING ====== */
+    function calcScore(tier, division, winRate, manual) {
+      const base = TIER_BASE[tier] ?? 13;
+      const div  = HAS_DIV.has(tier) ? (DIV_BONUS[division] ?? 0) : 0;
+      const wr   = ((winRate ?? 50) - 50) * 0.2;
+      return +((base + div + wr + (manual || 0)).toFixed(1));
+    }
+
+    /* ====== TEAM BALANCING ALGORITHM ====== */
+    function getCombinations(arr, k) {
+      if (k === 0) return [[]];
+      if (arr.length === k) return [[...arr]];
+      const [first, ...rest] = arr;
+      return [
+        ...getCombinations(rest, k - 1).map(c => [first, ...c]),
+        ...getCombinations(rest, k)
+      ];
+    }
+
+    function assignPositions(team) {
+      const n = team.length;
+      const slots = POSITIONS.slice(0, n);
+      let bestAssign = [...slots];
+      let bestPref = -1;
+
+      function bt(idx, assign, used) {
+        if (idx === n) {
+          const pref = team.filter((p, i) =>
+            p.positions.length === 0 || p.positions.includes(assign[i])
+          ).length;
+          if (pref > bestPref) { bestPref = pref; bestAssign = [...assign]; }
+          return;
+        }
+        for (const pos of slots) {
+          if (!used.has(pos)) {
+            used.add(pos);
+            assign[idx] = pos;
+            bt(idx + 1, assign, used);
+            used.delete(pos);
+          }
+        }
+      }
+
+      bt(0, [], new Set());
+
+      return team.map((p, i) => ({
+        ...p,
+        assignedPos: bestAssign[i],
+        onPos: p.positions.length === 0 || p.positions.includes(bestAssign[i])
+      }));
+    }
+
+    function balanceTeams(players) {
+      const n = players.length;
+      if (n < 2) return [];
+      const size = Math.floor(n / 2);
+      const combos = getCombinations(players, size);
+
+      let minDiff = Infinity;
+      const all = combos.map(t1 => {
+        const t1Ids = new Set(t1.map(p => p.id));
+        const t2 = players.filter(p => !t1Ids.has(p.id));
+        const s1 = t1.reduce((s, p) => s + p.score, 0);
+        const s2 = t2.reduce((s, p) => s + p.score, 0);
+        const diff = Math.abs(s1 - s2);
+        if (diff < minDiff) minDiff = diff;
+        return { t1, t2, s1, s2, diff };
+      });
+
+      // Keep all splits within 2 points of optimal for cycling
+      return all
+        .filter(s => s.diff <= minDiff + 2)
+        .map(({ t1, t2, s1, s2, diff }) => ({
+          team1: assignPositions(t1),
+          team2: assignPositions(t2),
+          score1: +s1.toFixed(1),
+          score2: +s2.toFixed(1),
+          diff: +diff.toFixed(1)
+        }));
+    }
+
+    /* ====== HELPERS ====== */
+    let _uid = 0;
+    const uid = () => `p${++_uid}`;
+
+    function balanceLabel(diff) {
+      if (diff < 1)  return { text: '완벽한 밸런스', color: '#22c55e' };
+      if (diff < 3)  return { text: '좋은 밸런스',   color: '#86c54e' };
+      if (diff < 5)  return { text: '보통 밸런스',   color: '#e8c240' };
+      return              { text: '불균형',         color: '#ef4444' };
+    }
+
+    const EMPTY_FORM = { name:'', tier:'골드', division:'IV', positions:[], winRate:50, manual:0 };
+
+    /* ====== APP ====== */
+    function App() {
+      const [players,  setPlayers]  = useState([]);
+      const [form,     setForm]     = useState(EMPTY_FORM);
+      const [editId,   setEditId]   = useState(null);
+      const [splits,   setSplits]   = useState([]);
+      const [splitIdx, setSplitIdx] = useState(0);
+      const [error,    setError]    = useState('');
+      const [copied,   setCopied]   = useState(false);
+
+      const preview = useMemo(
+        () => calcScore(form.tier, form.division, form.winRate, form.manual),
+        [form.tier, form.division, form.winRate, form.manual]
+      );
+      const result = splits[splitIdx] ?? null;
+
+      const sf = (key, val) => setForm(f => ({ ...f, [key]: val }));
+      const togglePos = pos => sf('positions',
+        form.positions.includes(pos)
+          ? form.positions.filter(p => p !== pos)
+          : [...form.positions, pos]
+      );
+
+      /* Add / Edit submit */
+      const handleSubmit = () => {
+        if (!form.name.trim()) { setError('닉네임을 입력해주세요'); return; }
+        if (!editId && players.length >= 10) { setError('최대 10명까지 추가할 수 있습니다'); return; }
+
+        const p = {
+          id: editId || uid(),
+          name: form.name.trim(),
+          tier: form.tier,
+          division: HAS_DIV.has(form.tier) ? form.division : null,
+          positions: [...form.positions],
+          winRate: form.winRate,
+          manual: form.manual,
+          score: calcScore(form.tier, form.division, form.winRate, form.manual)
+        };
+
+        if (editId) {
+          setPlayers(prev => prev.map(x => x.id === editId ? p : x));
+          setEditId(null);
+        } else {
+          setPlayers(prev => [...prev, p]);
+        }
+        setForm(EMPTY_FORM);
+        setError('');
+        setSplits([]);
+      };
+
+      const cancelEdit = () => { setEditId(null); setForm(EMPTY_FORM); setError(''); };
+
+      const handleEdit = p => {
+        setEditId(p.id);
+        setForm({ name: p.name, tier: p.tier, division: p.division || 'IV',
+                  positions: [...p.positions], winRate: p.winRate, manual: p.manual });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+
+      const handleDelete = id => {
+        setPlayers(prev => prev.filter(p => p.id !== id));
+        setSplits([]);
+        if (editId === id) cancelEdit();
+      };
+
+      /* Generate */
+      const handleGenerate = () => {
+        if (players.length < 4) { setError('최소 4명이 필요합니다'); return; }
+        const res = balanceTeams(players);
+        setSplits([...res].sort(() => Math.random() - 0.5));
+        setSplitIdx(0);
+        setError('');
+        setTimeout(() => document.getElementById('result')?.scrollIntoView({ behavior:'smooth' }), 80);
+      };
+
+      /* Copy result */
+      const handleCopy = () => {
+        if (!result) return;
+        const lines = [
+          `🔵 블루팀 (${result.score1}점)`,
+          ...result.team1.map(p => `  [${p.assignedPos}${p.onPos?'':'*'}] ${p.name} · ${p.tier}${p.division?' '+p.division:''} (${p.score}점)`),
+          '',
+          `🔴 레드팀 (${result.score2}점)`,
+          ...result.team2.map(p => `  [${p.assignedPos}${p.onPos?'':'*'}] ${p.name} · ${p.tier}${p.division?' '+p.division:''} (${p.score}점)`),
+          '',
+          `⚖ 점수 차이: ${result.diff}점   ${balanceLabel(result.diff).text}`,
+          '(*) 비선호 포지션 배정'
+        ];
+        navigator.clipboard?.writeText(lines.join('\n')).then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2200);
+        });
+      };
+
+      /* Score breakdown string */
+      const breakdown = () => {
+        const base = TIER_BASE[form.tier] + (HAS_DIV.has(form.tier) ? DIV_BONUS[form.division] : 0);
+        const wr = ((form.winRate - 50) * 0.2).toFixed(1);
+        const parts = [`티어 ${base}`];
+        if (form.winRate !== 50) parts.push(`승률 ${+wr > 0 ? '+' : ''}${wr}`);
+        if (form.manual !== 0) parts.push(`조정 ${form.manual > 0 ? '+' : ''}${form.manual}`);
+        return parts.join('  +  ');
+      };
+
+      const sorted = [...players].sort((a, b) => b.score - a.score);
+      const avgScore = players.length ? (players.reduce((s, p) => s + p.score, 0) / players.length).toFixed(1) : null;
+
+      return (
+        <div>
+          {/* ─── HEADER ─── */}
+          <header className="header">
+            <h1>⚔ 롤 내전 팀 밸런서</h1>
+            <p>티어 · 포지션 · 승률 · 조정 점수를 고려한 공정한 팀 배정</p>
+          </header>
+
+          <div className="container">
+
+            {/* ─── FORM ─── */}
+            <div className="section">
+              <div className="section-title">
+                {editId ? '✎ 플레이어 수정' : '+ 플레이어 추가'}
+              </div>
+
+              <div className="form-row form-1col">
+                <div className="field">
+                  <label>닉네임</label>
+                  <input
+                    type="text" placeholder="소환사명 입력..."
+                    value={form.name}
+                    onChange={e => sf('name', e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+                    maxLength={20}
+                  />
+                </div>
+              </div>
+
+              <div className="form-row form-3col">
+                <div className="field">
+                  <label>티어</label>
+                  <select value={form.tier} onChange={e => sf('tier', e.target.value)}>
+                    {TIERS.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div className="field">
+                  <label>디비전</label>
+                  <select
+                    value={form.division}
+                    onChange={e => sf('division', e.target.value)}
+                    disabled={!HAS_DIV.has(form.tier)}
+                  >
+                    {DIVISIONS.map(d => <option key={d} value={d}>{d}</option>)}
+                  </select>
+                </div>
+                <div className="field">
+                  <label>조정 점수 (-5 ~ +5)</label>
+                  <div className="adj-row">
+                    <button className="adj-btn" onClick={() => sf('manual', Math.max(-5, form.manual - 1))}>−</button>
+                    <div className="adj-val" style={{
+                      color: form.manual > 0 ? '#22c55e' : form.manual < 0 ? '#ef4444' : 'var(--text)'
+                    }}>
+                      {form.manual > 0 ? '+' : ''}{form.manual}
+                    </div>
+                    <button className="adj-btn" onClick={() => sf('manual', Math.min(5, form.manual + 1))}>+</button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="form-row form-1col">
+                <div className="field">
+                  <label>선호 포지션 (선택 안 하면 아무 포지션)</label>
+                  <div className="pos-group">
+                    {POSITIONS.map(pos => (
+                      <button
+                        key={pos}
+                        className={`pos-btn${form.positions.includes(pos) ? ' active' : ''}`}
+                        onClick={() => togglePos(pos)}
+                        style={form.positions.includes(pos) ? {
+                          borderColor: POS_COLORS[pos],
+                          background: POS_COLORS[pos] + '22',
+                          color: POS_COLORS[pos]
+                        } : {}}
+                      >
+                        {POS_ICONS[pos]} {pos}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="form-row form-1col">
+                <div className="field">
+                  <label>최근 승률 (30 ~ 70%)</label>
+                  <div className="range-row">
+                    <input
+                      type="range" min="30" max="70" step="1"
+                      value={form.winRate}
+                      onChange={e => sf('winRate', +e.target.value)}
+                    />
+                    <div className="range-val">{form.winRate}%</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="score-preview">
+                <div>
+                  <div style={{fontSize:'0.7rem',color:'var(--text-dim)',marginBottom:2}}>예상 점수</div>
+                  <div className="score-big">{preview}</div>
+                </div>
+                <div className="score-break">{breakdown()}</div>
+                <div style={{display:'flex',gap:6}}>
+                  {editId && (
+                    <button className="btn btn-outline btn-sm" onClick={cancelEdit}>취소</button>
+                  )}
+                  <button className="btn btn-gold" onClick={handleSubmit}>
+                    {editId ? '수정 완료' : '추가'}
+                  </button>
+                </div>
+              </div>
+
+              {error && <div className="error-msg">⚠ {error}</div>}
+            </div>
+
+            {/* ─── PLAYER LIST ─── */}
+            {players.length > 0 && (
+              <div className="section">
+                <div className="section-title">
+                  <span>참가자 목록</span>
+                  <span style={{fontSize:'0.8rem',color:'var(--text-dim)',fontWeight:'normal',textTransform:'none',letterSpacing:0}}>
+                    {players.length}명 &nbsp;·&nbsp; 평균 {avgScore}점
+                  </span>
+                </div>
+
+                {sorted.map(p => (
+                  <div key={p.id} className="player-item">
+                    <div className="player-name">{p.name}</div>
+                    <div className="tier-badge" style={{
+                      color: TIER_COLORS[p.tier],
+                      borderColor: TIER_COLORS[p.tier] + '55',
+                      background: TIER_COLORS[p.tier] + '18'
+                    }}>
+                      {p.tier}{p.division ? ' ' + p.division : ''}
+                    </div>
+                    <div className="pos-chips">
+                      {p.positions.length === 0
+                        ? <span className="flex-tag">아무거나</span>
+                        : p.positions.map(pos => (
+                          <span key={pos} className="pos-chip"
+                            style={{background: POS_COLORS[pos] + '28', color: POS_COLORS[pos]}}>
+                            {POS_ICONS[pos]} {pos}
+                          </span>
+                        ))
+                      }
+                    </div>
+                    <div className="player-wr">{p.winRate}%</div>
+                    {p.manual !== 0 && (
+                      <div style={{fontSize:'0.75rem',color: p.manual > 0 ? '#22c55e' : '#ef4444'}}>
+                        {p.manual > 0 ? '+' : ''}{p.manual}
+                      </div>
+                    )}
+                    <div className="player-score">{p.score}</div>
+                    <div className="player-actions">
+                      <button className="btn btn-sm btn-edit" onClick={() => handleEdit(p)}>수정</button>
+                      <button className="btn btn-sm btn-del"  onClick={() => handleDelete(p.id)}>삭제</button>
+                    </div>
+                  </div>
+                ))}
+
+                <div className="gen-bar">
+                  <div className="gen-info">
+                    {players.length < 4  && '팀을 만들려면 최소 4명이 필요합니다'}
+                    {players.length >= 4 && players.length < 10 &&
+                      `${players.length}명으로 ${Math.floor(players.length/2)}v${Math.floor(players.length/2)} 내전`}
+                    {players.length === 10 && '10명 5v5 내전 준비 완료 ✓'}
+                    {players.length > 10 && '⚠ 최대 10명까지 지원합니다'}
+                  </div>
+                  <button
+                    className="btn btn-gold"
+                    disabled={players.length < 4}
+                    onClick={handleGenerate}
+                  >
+                    ⚡ 팀 생성
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ─── RESULT ─── */}
+            {result && (
+              <div id="result" className="section">
+                <div className="section-title">
+                  <span>팀 배정 결과</span>
+                  <div style={{display:'flex',gap:6}}>
+                    <button className="btn btn-sm btn-outline" onClick={handleCopy}>📋 복사</button>
+                    <button className="btn btn-sm btn-outline" onClick={handleGenerate}>🔀 재생성</button>
+                  </div>
+                </div>
+
+                {/* Balance meter */}
+                {(() => {
+                  const total = result.score1 + result.score2;
+                  const blueW = total > 0 ? result.score1 / total * 100 : 50;
+                  const bal = balanceLabel(result.diff);
+                  return (
+                    <div className="balance-wrap">
+                      <div className="balance-bar-outer">
+                        <div className="bar-blue" style={{width: blueW + '%'}} />
+                        <div className="bar-red"  style={{width: (100 - blueW) + '%'}} />
+                      </div>
+                      <div className="balance-labels">
+                        <span style={{color:'#60b4ff'}}>블루팀 {result.score1}점</span>
+                        <span style={{color: bal.color, fontWeight:800}}>{bal.text} · 차이 {result.diff}점</span>
+                        <span style={{color:'#ff8080'}}>레드팀 {result.score2}점</span>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Teams */}
+                <div className="teams-grid">
+                  {[
+                    { key:'t1', label:'🔵 블루팀', score: result.score1, members: result.team1, cls:'blue' },
+                    { key:'t2', label:'🔴 레드팀', score: result.score2, members: result.team2, cls:'red'  }
+                  ].map(team => (
+                    <div key={team.key} className={`team-wrap ${team.cls}`}>
+                      <div className={`team-head ${team.cls}`}>
+                        <span>{team.label}</span>
+                        <span className="team-head-score">{team.score}점</span>
+                      </div>
+                      <div className="team-body">
+                        {team.members.map(p => (
+                          <div key={p.id} className="team-player">
+                            <div
+                              className={`pos-badge${p.onPos ? '' : ' off'}`}
+                              style={{
+                                background: POS_COLORS[p.assignedPos] + '20',
+                                color: POS_COLORS[p.assignedPos],
+                                border: `1px ${p.onPos ? 'solid' : 'dashed'} ${POS_COLORS[p.assignedPos]}70`
+                              }}
+                            >
+                              {POS_ICONS[p.assignedPos]} {p.assignedPos}
+                            </div>
+                            <div className="t-name">{p.name}</div>
+                            <div className="t-tier" style={{color: TIER_COLORS[p.tier]}}>
+                              {p.tier}{p.division ? ' ' + p.division : ''}
+                            </div>
+                            <div className="t-score">{p.score}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Split navigator */}
+                {splits.length > 1 && (
+                  <div className="split-nav">
+                    <button
+                      className="btn btn-sm btn-outline"
+                      onClick={() => setSplitIdx((splitIdx - 1 + splits.length) % splits.length)}
+                    >← 이전</button>
+                    <div className="split-nav-info">
+                      균형 배치 {splitIdx + 1} / {splits.length}
+                    </div>
+                    <button
+                      className="btn btn-sm btn-outline"
+                      onClick={() => setSplitIdx((splitIdx + 1) % splits.length)}
+                    >다음 →</button>
+                  </div>
+                )}
+
+                <p className="footnote">
+                  점선 테두리 포지션 = 비선호 포지션 배정 &nbsp;|&nbsp;
+                  점수 = 티어 기본값 + 승률 보정(±최대 4점) + 조정 점수
+                </p>
+              </div>
+            )}
+          </div>
+
+          {copied && <div className="toast">✓ 클립보드에 복사되었습니다</div>}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
