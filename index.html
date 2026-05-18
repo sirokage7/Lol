@@ -539,21 +539,46 @@
         setFetching(true);
         setFetchErr('');
         try {
-          let summonerId;
           const key = apiKey.trim();
-          const get = url => fetch(PROXY + encodeURIComponent(url)).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
 
+          // Try multiple CORS proxies in order
+          const riotGet = async (url) => {
+            const proxies = [
+              u => 'https://corsproxy.io/?url=' + encodeURIComponent(u),
+              u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
+            ];
+            let lastErr = new Error('네트워크 오류');
+            for (const makeUrl of proxies) {
+              try {
+                const r = await fetch(makeUrl(url));
+                if (r.status === 404) throw new Error('404');
+                if (r.status === 403 || r.status === 401) throw new Error('403');
+                if (r.status === 429) throw new Error('429');
+                if (!r.ok) throw new Error(String(r.status));
+                return await r.json();
+              } catch (e) {
+                lastErr = e;
+                // Don't retry on API errors — only on network/proxy errors
+                if (['404','403','429'].some(c => String(e.message).includes(c))) throw e;
+              }
+            }
+            throw lastErr;
+          };
+
+          let summonerId;
           if (name.includes('#')) {
-            const [gn, tl] = name.split('#', 2);
-            const { puuid } = await get(`https://asia.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(gn)}/${encodeURIComponent(tl)}?api_key=${key}`);
-            const s = await get(`https://kr.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/${puuid}?api_key=${key}`);
+            const hashIdx = name.indexOf('#');
+            const gn = name.slice(0, hashIdx);
+            const tl = name.slice(hashIdx + 1);
+            const acc = await riotGet(`https://asia.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${gn}/${tl}?api_key=${key}`);
+            const s   = await riotGet(`https://kr.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/${acc.puuid}?api_key=${key}`);
             summonerId = s.id;
           } else {
-            const s = await get(`https://kr.api.riotgames.com/lol/summoner/v4/summoners/by-name/${encodeURIComponent(name)}?api_key=${key}`);
+            const s = await riotGet(`https://kr.api.riotgames.com/lol/summoner/v4/summoners/by-name/${name}?api_key=${key}`);
             summonerId = s.id;
           }
 
-          const entries = await get(`https://kr.api.riotgames.com/lol/league/v4/entries/by-summoner/${summonerId}?api_key=${key}`);
+          const entries = await riotGet(`https://kr.api.riotgames.com/lol/league/v4/entries/by-summoner/${summonerId}?api_key=${key}`);
           const solo = entries.find(e => e.queueType === 'RANKED_SOLO_5x5');
 
           if (!solo) {
@@ -566,9 +591,11 @@
             setForm(f => ({ ...f, tier, division, winRate: Math.max(30, Math.min(70, wr)) }));
           }
         } catch (e) {
-          if (String(e.message).includes('403')) setFetchErr('API 키가 잘못되었거나 만료되었습니다');
-          else if (String(e.message).includes('404')) setFetchErr('소환사를 찾을 수 없습니다');
-          else setFetchErr('조회 실패 — 닉네임 형식: 이름#KR1');
+          const m = String(e.message);
+          if (m.includes('403') || m.includes('401')) setFetchErr('API 키가 만료되었습니다 — developer.riotgames.com에서 키를 새로 발급해주세요');
+          else if (m.includes('404')) setFetchErr('소환사를 찾을 수 없습니다 — 닉네임과 태그를 확인해주세요 (예: 포로빵댕이#빵댕이)');
+          else if (m.includes('429')) setFetchErr('잠시 후 다시 시도해주세요 (요청 한도 초과)');
+          else setFetchErr('조회 실패 — API 키가 유효한지 확인하거나 잠시 후 다시 시도해주세요');
         } finally {
           setFetching(false);
         }
